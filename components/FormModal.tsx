@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import { useMutation } from 'convex/react';
+import { api } from '../convex/_generated/api';
 import styles from '../app/styles.module.css';
 
 interface FormModalProps {
@@ -11,6 +13,8 @@ interface FormModalProps {
 }
 
 export default function FormModal({ isOpen, onClose, formType, programName }: FormModalProps) {
+  const createSubmission = useMutation(api.submissions.createSubmission);
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -22,6 +26,7 @@ export default function FormModal({ isOpen, onClose, formType, programName }: Fo
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
+  const [referenceNumber, setReferenceNumber] = useState<string>('');
 
   const getFormTitle = () => {
     switch (formType) {
@@ -40,17 +45,72 @@ export default function FormModal({ isOpen, onClose, formType, programName }: Fo
     }
   };
 
+  const getSubmissionType = () => {
+    switch (formType) {
+      case 'apply':
+        return 'application';
+      case 'reserve':
+        return 'reservation';
+      case 'interested':
+        return 'interest';
+      case 'payment':
+        return 'payment-inquiry';
+      case 'enquiry':
+        return 'enquiry';
+      default:
+        return 'enquiry';
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setSubmitStatus(null);
 
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      // Split full name into first and last
+      const nameParts = formData.fullName.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || nameParts[0];
+
+      // Create submission object
+      const submissionData: any = {
+        submissionType: getSubmissionType(),
+        firstName,
+        lastName,
+        email: formData.email,
+        phone: formData.phone,
+        country: formData.country,
+      };
+
+      // Add program if not enquiry
+      if (formType !== 'enquiry' && formData.program) {
+        submissionData.programPosition = formData.program;
+      }
+
+      // Add message based on form type
+      if (formData.message) {
+        if (formType === 'enquiry') {
+          submissionData.enquiryMessage = formData.message;
+        } else if (formType === 'interested') {
+          submissionData.interestMessage = formData.message;
+        } else if (formType === 'payment') {
+          submissionData.paymentMessage = formData.message;
+        } else if (formType === 'reserve') {
+          submissionData.reservationReason = formData.message;
+        } else {
+          submissionData.motivation = formData.message;
+        }
+      }
+
+      // Submit to Convex
+      const result = await createSubmission(submissionData);
+
       setIsSubmitting(false);
       setSubmitStatus('success');
+      setReferenceNumber(result.referenceNumber);
 
-      // Reset form after 2 seconds
+      // Reset form after 3 seconds
       setTimeout(() => {
         setFormData({
           fullName: '',
@@ -61,9 +121,14 @@ export default function FormModal({ isOpen, onClose, formType, programName }: Fo
           country: '',
         });
         setSubmitStatus(null);
+        setReferenceNumber('');
         onClose();
-      }, 2000);
-    }, 1500);
+      }, 3000);
+    } catch (error) {
+      console.error('Submission error:', error);
+      setIsSubmitting(false);
+      setSubmitStatus('error');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -86,7 +151,14 @@ export default function FormModal({ isOpen, onClose, formType, programName }: Fo
 
         {submitStatus === 'success' && (
           <div className={styles.successMessage}>
-            Thank you! Your submission has been received successfully.
+            <strong>Thank you! Your submission has been received successfully.</strong>
+            {referenceNumber && (
+              <p style={{ marginTop: '10px', fontSize: '14px' }}>
+                Your reference number: <strong>{referenceNumber}</strong>
+                <br />
+                Please save this for your records.
+              </p>
+            )}
           </div>
         )}
 
