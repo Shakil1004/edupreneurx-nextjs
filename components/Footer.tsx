@@ -11,12 +11,16 @@ export default function Footer({ onNavigate }: FooterProps) {
     <footer className={styles.footer}>
       <div className={styles.container}>
         <div className={styles.footerContent}>
+          {/* About Section */}
           <div className={styles.footerSection}>
             <h3>EduPreneurX</h3>
             <p>World's First Revolutionary Programs & CEO Institute</p>
-            <p>Transforming entrepreneurs into industry leaders since our inception.</p>
+            <p style={{ marginTop: '1rem' }}>Also Known as CEO Institute</p>
+            <p>Also Known as EduPreneurX Institute</p>
+            <p style={{ marginTop: '1rem' }}>Transforming entrepreneurs into industry leaders globally.</p>
           </div>
 
+          {/* Quick Links */}
           <div className={styles.footerSection}>
             <h3>Quick Links</h3>
             <ul>
@@ -24,10 +28,14 @@ export default function Footer({ onNavigate }: FooterProps) {
               <li><a onClick={() => onNavigate('about')}>About Us</a></li>
               <li><a onClick={() => onNavigate('programs')}>All Programs</a></li>
               <li><a onClick={() => onNavigate('admissions')}>Admissions</a></li>
+              <li><a onClick={() => onNavigate('global')}>Global Presence</a></li>
+              <li><a onClick={() => onNavigate('success')}>Success Stories</a></li>
               <li><a onClick={() => onNavigate('careers')}>Careers</a></li>
+              <li><a onClick={() => onNavigate('contact')}>Contact</a></li>
             </ul>
           </div>
 
+          {/* Programs */}
           <div className={styles.footerSection}>
             <h3>Programs</h3>
             <ul>
@@ -39,6 +47,7 @@ export default function Footer({ onNavigate }: FooterProps) {
             </ul>
           </div>
 
+          {/* Connect With Us */}
           <div className={styles.footerSection}>
             <h3>Connect With Us</h3>
             <ul>
@@ -55,27 +64,31 @@ export default function Footer({ onNavigate }: FooterProps) {
           </div>
         </div>
 
+        {/* Global Offices */}
         <div className={styles.footerOffices}>
           <h3 style={{ color: '#f0d43a', marginBottom: '1rem' }}>Global Offices</h3>
           <div className={styles.officeInfo}>
-            <span className={styles.officeFlag}>India:</span> Bangalore, Mumbai, Delhi
+            <span className={styles.officeFlag}>🇬🇧 United Kingdom:</span> Office 7253, 182-184 High Street North, East Ham, London E6 2JA
           </div>
           <div className={styles.officeInfo}>
-            <span className={styles.officeFlag}>USA:</span> Silicon Valley, New York
+            <span className={styles.officeFlag}>🇮🇳 India:</span> Tower B DLF, 408, Jasola N.Delhi, India
           </div>
           <div className={styles.officeInfo}>
-            <span className={styles.officeFlag}>UK:</span> London
+            <span className={styles.officeFlag}>🇵🇱 Poland:</span> Swietokrzyska 30, lok.6300-166, Warszawa
           </div>
           <div className={styles.officeInfo}>
-            <span className={styles.officeFlag}>Singapore:</span> Marina Bay
+            <span className={styles.officeFlag}>🇨🇦 Canada:</span> International Operations Center
           </div>
           <div className={styles.officeInfo}>
-            <span className={styles.officeFlag}>UAE:</span> Dubai
+            <span className={styles.officeFlag}>🌍 Network:</span> 65+ Countries Global Presence, 22+ Operational Countries
           </div>
         </div>
 
         <div className={styles.footerBottom}>
           <p>&copy; 2024 EduPreneurX. All rights reserved. | Privacy Policy | Terms of Service</p>
+          <p style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+            Powered by World Business Groups - Transforming Education Globally
+          </p>
         </div>
       </div>
     </footer>
