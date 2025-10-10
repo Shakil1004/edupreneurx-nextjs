@@ -45,8 +45,43 @@ function formatDate(dateString: string) {
   });
 }
 
-// Generate confirmation email HTML (simplified for Convex)
+// Generate confirmation email HTML (matching provided design)
 function generateConfirmationHTML(args: any): string {
+  const getSubmissionTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      'application': 'Program Application',
+      'reservation': 'Program Reservation',
+      'enquiry': 'General Enquiry',
+      'interest': 'Expression of Interest',
+      'payment-inquiry': 'Payment Inquiry'
+    };
+    return labels[type] || type;
+  };
+
+  const getProgramFullName = (program?: string) => {
+    const programs: Record<string, string> = {
+      'GEEP': 'Global Executive Entrepreneurship Program (GEEP)',
+      'IEEP': 'International Executive Entrepreneurship Program (IEEP)',
+      'GBLP': 'Global Business Leadership Program (GBLP)',
+      'EIP': 'Entrepreneurship Incubation Program (EIP)',
+      'ERBP': 'Entrepreneurship Research & Business Program (ERBP)'
+    };
+    return program ? (programs[program] || program) : '';
+  };
+
+  const getFeeStructure = (program?: string) => {
+    const feeStructures: Record<string, string> = {
+      'GEEP': '✅ Admission Fee: $10,000 (One-time)<br>✅ Monthly Fee: $1,000/month (Years 1-2)<br>✅ Years 2+ onwards: 100% FREE + Lifetime Support',
+      'IEEP': '✅ Admission Fee: $8,000 (One-time)<br>✅ Monthly Fee: $800/month (Years 1-2)<br>✅ Years 2+ onwards: 100% FREE + Lifetime Support',
+      'GBLP': '✅ Admission Fee: $12,000 (One-time)<br>✅ Monthly Fee: $1,200/month (Years 1-2)<br>✅ Years 2+ onwards: 100% FREE + Lifetime Support',
+      'EIP': '✅ Admission Fee: $5,000 (One-time)<br>✅ Monthly Fee: $500/month (Years 1-2)<br>✅ Years 2+ onwards: 100% FREE + Lifetime Support',
+      'ERBP': '✅ Admission Fee: $7,000 (One-time)<br>✅ Monthly Fee: $700/month (Years 1-2)<br>✅ Years 2+ onwards: 100% FREE + Lifetime Support'
+    };
+    return program ? feeStructures[program] || feeStructures['GEEP'] : feeStructures['GEEP'];
+  };
+
+  const programFullName = getProgramFullName(args.programPosition);
+
   return `
 <!DOCTYPE html>
 <html>
@@ -55,45 +90,136 @@ function generateConfirmationHTML(args: any): string {
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f5f5f5;padding:20px 0;">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+        <!-- Header -->
         <tr>
           <td style="background:linear-gradient(135deg,#ff6b35 0%,#f7931e 100%);padding:30px 20px;text-align:center;">
             <div style="color:#ffffff;font-size:24px;font-weight:bold;">◆◆◆◆◆◆ EduPreneurX New Submission</div>
-            <div style="color:#ffffff;font-size:14px;margin-top:10px;">ENTREPRENEURSHIP EXCELLENCE</div>
+            <div style="color:#ffffff;font-size:14px;margin-top:10px;">${getSubmissionTypeLabel(args.submissionType).toUpperCase()}</div>
           </td>
         </tr>
+        <!-- Content -->
         <tr>
           <td style="padding:30px 40px;">
-            <div style="text-align:center;margin-bottom:30px;">
-              <div style="display:inline-block;background-color:#10b981;color:white;padding:12px 24px;border-radius:6px;font-size:16px;font-weight:600;">✓ Submission Successful</div>
+            <!-- High Priority Badge -->
+            <div style="text-align:center;margin-bottom:25px;">
+              <div style="display:inline-block;background-color:#ef4444;color:white;padding:10px 20px;border-radius:6px;font-size:14px;font-weight:700;">HIGH PRIORITY</div>
             </div>
-            <h2 style="color:#1f2937;font-size:20px;margin-bottom:20px;text-align:center;">Thank you for your submission!</h2>
-            <p style="color:#4b5563;font-size:14px;line-height:1.6;margin-bottom:30px;text-align:center;">We have received your submission and our team will review it shortly.</p>
-            <div style="background-color:#fef3c7;border-left:4px solid #f59e0b;padding:16px;margin-bottom:25px;border-radius:4px;">
+
+            <!-- Reference Number -->
+            <div style="background-color:#fef3c7;border-left:4px solid #f59e0b;padding:16px;margin-bottom:20px;border-radius:4px;">
               <div style="font-size:12px;color:#92400e;font-weight:600;margin-bottom:5px;">Reference Number</div>
               <div style="font-size:18px;color:#78350f;font-weight:bold;font-family:monospace;">${args.referenceNumber}</div>
             </div>
-            <div style="background-color:#f3f4f6;padding:16px;margin-bottom:25px;border-radius:4px;">
+
+            <!-- Submission Date -->
+            <div style="background-color:#f3f4f6;padding:14px;margin-bottom:25px;border-radius:4px;">
               <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:5px;">Submission Date</div>
               <div style="font-size:14px;color:#1f2937;">${formatDate(args.submissionDate)}</div>
             </div>
-            <div style="background-color:#f9fafb;padding:12px;border-radius:4px;margin-bottom:10px;">
-              <div style="font-size:12px;color:#6b7280;font-weight:600;">Name:</div>
-              <div style="font-size:14px;color:#1f2937;">${args.firstName} ${args.lastName}</div>
+
+            <!-- Personal Information -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+              <tr>
+                <td style="background-color:#f9fafb;padding:12px;border-radius:4px;width:48%;">
+                  <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:4px;">Name</div>
+                  <div style="font-size:14px;color:#1f2937;">${args.firstName} ${args.lastName}</div>
+                </td>
+                <td style="width:4%;"></td>
+                <td style="background-color:#f9fafb;padding:12px;border-radius:4px;width:48%;">
+                  <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:4px;">Email</div>
+                  <div style="font-size:14px;color:#1f2937;">${args.email}</div>
+                </td>
+              </tr>
+            </table>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:25px;">
+              <tr>
+                <td style="background-color:#f9fafb;padding:12px;border-radius:4px;width:48%;">
+                  <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:4px;">Phone</div>
+                  <div style="font-size:14px;color:#1f2937;">${args.phone}</div>
+                </td>
+                <td style="width:4%;"></td>
+                <td style="background-color:#f9fafb;padding:12px;border-radius:4px;width:48%;">
+                  <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:4px;">Country</div>
+                  <div style="font-size:14px;color:#1f2937;">${args.country}</div>
+                </td>
+              </tr>
+            </table>
+
+            ${args.programPosition ? `
+            <!-- Program/Position Information -->
+            <h3 style="color:#1f2937;font-size:16px;margin:25px 0 15px 0;padding-bottom:8px;border-bottom:2px solid #e5e7eb;">Program/Position Information</h3>
+            <div style="background-color:#f9fafb;padding:14px;border-radius:4px;margin-bottom:20px;">
+              <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:5px;">Selected Program/Position</div>
+              <div style="font-size:14px;color:#1f2937;font-weight:700;">${programFullName}</div>
             </div>
-            <div style="background-color:#f9fafb;padding:12px;border-radius:4px;margin-bottom:10px;">
-              <div style="font-size:12px;color:#6b7280;font-weight:600;">Email:</div>
-              <div style="font-size:14px;color:#1f2937;">${args.email}</div>
+            ` : ''}
+
+            ${args.businessIdea ? `
+            <!-- Business Idea -->
+            <div style="background-color:#f9fafb;padding:14px;border-radius:4px;margin-bottom:15px;">
+              <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:5px;">Business Idea</div>
+              <div style="font-size:14px;color:#374151;line-height:1.6;">${args.businessIdea}</div>
             </div>
-            ${args.programPosition ? `<div style="background-color:#f9fafb;padding:12px;border-radius:4px;margin-bottom:10px;">
-              <div style="font-size:12px;color:#6b7280;font-weight:600;">Program:</div>
-              <div style="font-size:14px;color:#1f2937;font-weight:600;">${args.programPosition}</div>
-            </div>` : ''}
+            ` : ''}
+
+            ${args.motivation ? `
+            <!-- Motivation -->
+            <div style="background-color:#f9fafb;padding:14px;border-radius:4px;margin-bottom:25px;">
+              <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:5px;">Motivation</div>
+              <div style="font-size:14px;color:#374151;line-height:1.6;">${args.motivation}</div>
+            </div>
+            ` : ''}
+
+            ${args.enquiryMessage ? `
+            <!-- Enquiry Message -->
+            <div style="background-color:#f9fafb;padding:14px;border-radius:4px;margin-bottom:25px;">
+              <div style="font-size:12px;color:#6b7280;font-weight:600;margin-bottom:5px;">Enquiry Message</div>
+              <div style="font-size:14px;color:#374151;line-height:1.6;">${args.enquiryMessage}</div>
+            </div>
+            ` : ''}
+
+            ${args.programPosition ? `
+            <!-- Payment Information Section -->
+            <div style="background-color:#10b981;padding:20px;border-radius:6px;margin:30px 0;">
+              <div style="text-align:center;color:white;margin-bottom:15px;">
+                <div style="font-size:16px;font-weight:bold;margin-bottom:8px;">◆◆◆◆◆◆ Payment Information - ADMIN ACTION REQUIRED</div>
+                <div style="font-size:13px;opacity:0.95;margin-bottom:12px;">Send this payment link to the customer:</div>
+              </div>
+
+              <div style="background-color:rgba(255,255,255,0.15);padding:15px;border-radius:4px;margin-bottom:15px;">
+                <div style="color:white;font-size:14px;font-weight:600;margin-bottom:8px;text-align:center;">Payment Link for ${programFullName}</div>
+              </div>
+
+              <div style="background-color:rgba(255,255,255,0.15);padding:15px;border-radius:4px;margin-bottom:15px;">
+                <div style="color:white;font-size:13px;margin-bottom:8px;font-weight:600;">Fee Structure for ${programFullName}:</div>
+                <div style="color:white;font-size:13px;line-height:1.8;">${getFeeStructure(args.programPosition)}</div>
+              </div>
+
+              <div style="background-color:rgba(255,255,255,0.2);padding:12px;border-radius:4px;">
+                <div style="font-size:11px;color:white;opacity:0.95;margin-bottom:5px;font-weight:600;">ADMIN NOTE:</div>
+                <div style="font-size:12px;color:white;opacity:0.95;">Customer has applied for ${programFullName}. Please send payment link and follow up within 24 hours.</div>
+              </div>
+            </div>
+            ` : ''}
+
+            <!-- Action Required Section -->
+            <div style="background-color:#fee2e2;border-left:4px solid #dc2626;padding:16px;margin-top:25px;border-radius:4px;">
+              <div style="font-size:12px;color:#991b1b;font-weight:600;margin-bottom:8px;">◆◆◆◆◆◆ Action Required</div>
+              <div style="font-size:13px;color:#7f1d1d;line-height:1.7;">
+                <strong>Response Timeline:</strong> 3-4 working weeks<br>
+                <strong>Next Steps:</strong> Prepare for your interview and assessment<br>
+                <strong>Assigned To:</strong> Team Lead (TBD)
+              </div>
+            </div>
+
           </td>
         </tr>
+        <!-- Footer -->
         <tr>
           <td style="background-color:#374151;padding:25px 40px;text-align:center;">
             <div style="color:#d1d5db;font-size:11px;line-height:1.8;">
-              <strong style="color:#ffffff;font-size:13px;display:block;margin-bottom:10px;">EduPreneurX Privacy-Protected System v4.8</strong>
+              <strong style="color:#ffffff;font-size:13px;display:block;margin-bottom:10px;">EduPreneurX Privacy-Protected System</strong>
               Building tomorrow's entrepreneurs today - Global Executive Through Innovation
             </div>
           </td>
