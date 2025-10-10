@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 // Generate unique reference number
 function generateReferenceNumber(): string {
@@ -55,6 +56,25 @@ export const createSubmission = mutation({
       submissionDate,
       status: "new",
       ...args,
+    });
+
+    // Schedule email sending action (non-blocking)
+    ctx.scheduler.runAfter(0, internal.emails.sendSubmissionConfirmationEmail, {
+      referenceNumber,
+      firstName: args.firstName,
+      lastName: args.lastName,
+      email: args.email,
+      phone: args.phone,
+      country: args.country,
+      submissionType: args.submissionType,
+      programPosition: args.programPosition,
+      submissionDate,
+      businessIdea: args.businessIdea,
+      motivation: args.motivation,
+      enquiryMessage: args.enquiryMessage,
+      reservationReason: args.reservationReason,
+      interestMessage: args.interestMessage,
+      paymentMessage: args.paymentMessage,
     });
 
     return {
@@ -129,8 +149,36 @@ export const updateSubmissionStatus = mutation({
     followUpDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { submissionId, ...updates } = args;
-    await ctx.db.patch(submissionId, updates);
+    const { submissionId, status, ...otherUpdates } = args;
+
+    // Get the existing submission to access old status and other fields
+    const submission = await ctx.db.get(submissionId);
+
+    if (!submission) {
+      throw new Error("Submission not found");
+    }
+
+    const oldStatus = submission.status || "new";
+
+    // Update the submission
+    await ctx.db.patch(submissionId, { status, ...otherUpdates });
+
+    // Only send email if status actually changed
+    if (oldStatus !== status) {
+      // Schedule email sending action (non-blocking)
+      ctx.scheduler.runAfter(0, internal.emails.sendStatusUpdateEmail, {
+        referenceNumber: submission.referenceNumber,
+        firstName: submission.firstName,
+        lastName: submission.lastName,
+        email: submission.email,
+        submissionType: submission.submissionType,
+        programPosition: submission.programPosition,
+        oldStatus,
+        newStatus: status,
+        submissionDate: submission.submissionDate,
+      });
+    }
+
     return { success: true };
   },
 });
